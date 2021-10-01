@@ -1,5 +1,6 @@
 const fs = require('fs/promises');
 const path = require('path');
+const Joi = require('joi');
 
 const getAllContacts = fs.readFile(
   path.resolve(__dirname, './contacts.json'),
@@ -19,17 +20,68 @@ const getContactById = async contactId => {
 const removeContact = async contactId => {
   const contacts = JSON.parse(await getAllContacts);
 
-  const newContacts = contacts.filter(item => item.id !== contactId);
+  const newContacts = contacts.filter(({ id }) => id !== contactId);
 
-  console.log('Contact deleted successfully! New list of contacts: ');
+  console.log('Delete contact');
   console.table(newContacts);
 
   return newContacts;
 };
 
-const addContact = async body => {};
+const addContact = async body => {
+  // const createContactRules = Joi.object({
+  //   name: Joi.string().required(),
+  //   email: Joi.string().required(),
+  //   phone: Joi.string().required(),
+  // });
 
-const updateContact = async (contactId, body) => {};
+  // const result = Joi.valid(body, createContactRules);
+  // console.log(contacts, 'contacts top');
+  const contacts = JSON.parse(await getAllContacts);
+
+  const newContact = {
+    ...body,
+    id: contacts.length + 1,
+  };
+
+  contacts.push(newContact);
+
+  fs.writeFile(
+    path.resolve(__dirname, './contacts.json'),
+    JSON.stringify(contacts),
+    error => {
+      if (error) {
+        return console.log(error);
+      }
+    },
+  );
+
+  return contacts;
+};
+
+const updateContact = async (contactId, body) => {
+  const contacts = JSON.parse(await getAllContacts);
+  const targetContactIdx = contacts.findIndex(
+    contact => contact.id === contactId,
+  );
+
+  contacts[targetContactIdx] = {
+    ...contacts[targetContactIdx],
+    ...body,
+  };
+
+  fs.writeFile(
+    path.resolve(__dirname, './contacts.json'),
+    JSON.stringify(contacts),
+    error => {
+      if (error) {
+        return console.log(error);
+      }
+    },
+  );
+
+  return contacts;
+};
 
 module.exports = {
   listContacts,

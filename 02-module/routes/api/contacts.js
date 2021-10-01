@@ -9,8 +9,8 @@ router.get('/', async (req, res, next) => {
 });
 
 router.get('/:contactId', async (req, res, next) => {
-  const contactId = req.params.contactId;
-  const foundContact = fnContacts.getContactById(Number(contactId));
+  const contactId = Number(req.params.contactId);
+  const foundContact = fnContacts.getContactById(contactId);
 
   foundContact.then(data => {
     data
@@ -20,11 +20,18 @@ router.get('/:contactId', async (req, res, next) => {
 });
 
 router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' });
+  const bd = req.body;
+
+  fnContacts.addContact(bd).then(data => {
+    console.log(data, 'data');
+    data
+      ? res.status(200).send(data)
+      : res.status(404).json({ message: 'no such contact was found' });
+  });
 });
 
 router.delete('/:contactId', async (req, res, next) => {
-  const contactId = req.params.contactId;
+  const contactId = Number(req.params.contactId);
 
   fnContacts.removeContact(contactId).then(data => {
     res.status(200).json(data);
@@ -32,7 +39,14 @@ router.delete('/:contactId', async (req, res, next) => {
 });
 
 router.patch('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' });
+  const contactId = Number(req.params.contactId);
+  const bd = req.body;
+
+  fnContacts.updateContact(contactId, bd).then(data => {
+    data
+      ? res.status(200).send(data)
+      : res.status(404).json({ message: 'no such contact was found' });
+  });
 });
 
 module.exports = router;
